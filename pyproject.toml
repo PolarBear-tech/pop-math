@@ -1,0 +1,19 @@
+[project]
+name = "popmath"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = ["manim>=0.20.1", "manim-preview>=0.1.0"]
+
+[tool.pyright]
+reportAny = false
+reportUnusedCallResult = false
+reportUnknownMemberType = false
+reportUnknownVariableType = false
+reportUnknownArgumentType = false
+reportWildcardImportFromLibrary = false
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I"]
+ignore = ["F405", "F403"]
