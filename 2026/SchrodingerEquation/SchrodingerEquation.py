@@ -1,6 +1,7 @@
 from typing import override
 
 from manim import *
+from manim.typing import Vector3D
 
 Text.set_default(font="LXGW WenKai")
 
@@ -461,10 +462,14 @@ class SchrodingerEquation(Scene):
             .set_color(GRAY)
         )
         maxwell_eqs = MathTex(r"""\begin{cases}
-    \displaystyle \nabla \cdot \,\,\mathbf{E}  =\frac{\rho _e}{\epsilon _0}              \\
-	\displaystyle \nabla \times   \mathbf{E}   =-\frac{\partial \mathbf{B}}{\partial t}  \\
-	\displaystyle \nabla \cdot \,\,\mathbf{B}  =0                                        \\
-	\displaystyle \nabla \times   \mathbf{B}   =\epsilon _0\mu _0\frac{\partial \mathbf{E}}{\partial t}+\mu _0\mathbf{j} \\
+    \displaystyle \nabla \cdot \,\,\mathbf{E}
+            =\frac{\rho _e}{\epsilon _0}              \\
+	\displaystyle \nabla \times   \mathbf{E}
+            =-\frac{\partial \mathbf{B}}{\partial t}  \\
+	\displaystyle \nabla \cdot \,\,\mathbf{B}
+            =0                                        \\
+	\displaystyle \nabla \times   \mathbf{B}
+            =\epsilon _0\mu _0\frac{\partial \mathbf{E}}{\partial t}+\mu _0\mathbf{j} \\
 \end{cases}""")
 
         self.play(Write(maxwell_eqs), Write(annotation_1))
@@ -544,7 +549,7 @@ class SchrodingerEquation(Scene):
         for y, elec, wl in zip(elec_y, electronics, wave_lenghts):
             elec.shift(y).to_edge(LEFT, LARGE_BUFF - 0.1)
 
-            def get_update_elec(y):
+            def get_update_elec(y: Vector3D):
                 def update_elec(mob: Mobject):
                     return mob.move_to(y + A * np.sin(phi.get_value()) * UP).to_edge(
                         LEFT, LARGE_BUFF - 0.1
@@ -563,7 +568,7 @@ class SchrodingerEquation(Scene):
                 .to_edge(LEFT, LARGE_BUFF)
             )
 
-            def get_update_wave(y, wl):
+            def get_update_wave(y: Vector3D, wl: float):
 
                 def update_wave(mob: Mobject):
                     return mob.become(
@@ -695,7 +700,7 @@ class SchrodingerEquation(Scene):
 
         self.wait()
 
-        self.play(FadeOut(nucleus, electron, orbit))
+        self.play(FadeOut(nucleus, electron, orbit, rutherford))
 
         self.next_section(skip_animations=_P["current"])
 
@@ -715,5 +720,43 @@ class SchrodingerEquation(Scene):
         )
 
         self.play(FadeIn(zinc_plate, plate_label))
+
+        phi_1 = ValueTracker(0)
+        A_1 = 0.2
+        t_range_1 = (0, 6)
+        uv_wl = 1
+        ori_uv = ParametricFunction(
+            lambda t: (t, A_1 * np.sin(2 * PI / uv_wl * t + phi_1.get_value()), 0),
+            t_range=t_range_1,
+            color=sin_wl2color(uv_wl),
+        )
+        uvs = [ori_uv.copy() for _ in range(3)]
+
+        for i, uv in zip(range(3), uvs):
+            uv.shift(UP * (1 - i) + LEFT * 3)
+
+            def get_update_uv(cnt: int):
+                def update_uv(mob: Mobject):
+                    return mob.become(
+                        ParametricFunction(
+                            lambda t: (
+                                t,
+                                A_1 * np.sin(2 * PI / uv_wl * t + phi_1.get_value()),
+                                0,
+                            ),
+                            t_range=t_range_1,
+                            color=sin_wl2color(uv_wl),
+                        )
+                    ).shift(UP * (1 - cnt) + LEFT * 3)
+
+                return update_uv
+
+            uv.add_updater(get_update_uv(i))
+
+        self.play(
+            FadeIn(*uvs),
+        )
+
+        self.play(phi_1.animate.set_value(-PI * 4), run_time=4, rate_func=linear)
 
         self.wait()  # SchrodingerEquation
